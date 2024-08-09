@@ -1,2 +1,102 @@
-Hello Mahroo!
+from classiq import *
+
+
+
+beta_dict = {0:7, 1:6, 2:5, 3:4, 4:15, 5:1, 6:6, 7:2}
+beta_array = CArray([(key, value) for key, value in beta_dict.items()])
+
+
+
+
+@qfunc
+def state_preparation(j: QNum, r: CInt, beta: CArray[CInt, CInt]):
+    
+    beta_dict = {key: value for key, value in beta}
+    #first step
+    key = int(j, 2)
+    betaj = beta_dict[key]
+    
+    #BetaMax
+    for value in beta_dict:
+        if value >= betaj:
+            betamax = value
+            
+    #betabar = (2**r)*(betaj/betamax)        
+    deci = betaj/betamax
+    
+    fraction = deci * (2**r)
+    
+    #Get the integer part
+    integer_part = int(fraction)
+    
+    #binary
+    betabar = bin(integer_part)[2:]
+
+    
+    n = 0
+    for i in betabar:
+        if i == "1":
+            X(n)
+            n += 1
+        else:
+            n += 1
+            
+            
+            
+            
+#step 2 adding H to ancillas equal_superposition
+def main(j: QNum, r: CInt, beta: CArray[CInt, CInt], x: Output[QBit]):
+    
+    #beta
+    allocate(r, beta)
+    
+    #anicilla
+    allocate(r, cntrl)
+    
+    # Apply H gate to the first qubit
+    for i in range(r):
+        H(i)
+    
+    allocate(1, target)
+    
+    
+    #again beta
+    beta_dict = {key: value for key, value in beta}
+    
+    key = int(j, 2)
+    betaj = beta_dict[key]
+    
+    #BetaMax
+    for value in beta_dict:
+        if value >= betaj:
+            betamax = value
+            
+    #betabar = (2**r)*(betaj/betamax)        
+    deci = betaj/betamax
+    
+    fraction = deci * (2**r)
+    
+    #Get the integer part
+    integer_part = int(fraction)
+    
+    #binary
+    betabar = bin(integer_part)[2:]
+    
+    #betabar Oracle
+    X(beta)
+    
+    #inequality test
+    for i in range(integer_part: 2**r):
+        control(ctrl=controller == int(bin(i)[2:]), stmt_block=lambda: X(target))
+        
+        
+    
+    #revers of H
+    for i in range(r):
+        H(i)
+    
+    
+    #reverse betabar Oracle
+    X(beta)    
+
 
